@@ -5,7 +5,7 @@ Created on Sat Aug 11 09:39:18 2018
 @author: 肖
 """
 
-'''1.nupmy图形处理技术'''
+'''1.1nupmy图形处理技术'''
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -41,16 +41,39 @@ fish6[80:120,80:110] = np.ones((40,30,3))  # 这样处理会使图片的部分�
 plt.imshow(fish6)
 
 fish7 = fish[::,::,0]  # 把第三个维度颜色干掉---进行灰度化处理
-plt.imshow(fish7,cmap = "gray")
+plt.imshow(fish7,cmap = "gray")  # cmap = "gray"背景着色为灰色
 
-'''2.pandas---Series''' 
+fish8 = fish[::-1,::-1,::]  # 对图片进行上下左右的颠倒
+plt.imshow(fish8)
+
+'''1.2 cv2人脸识别算法--安装: pip install opencv-python,或者通过anaconda navigator可视化安装'''
+import cv2  # cv2人脸更换这个包,算法别人已经写好的,opencv:计算机视觉库（内容很多,买本书你可以看一下,基于python的包,用于处理图片等
+sanpang = cv2.imread("G:/python doc/spyder picture/sanpang.jpg")  # CV2在读数据的时候,BGR格式的数据,与RGB格式不同
+plt.imshow(sanpang)
+plt.imshow(sanpang[::,::,::-1])   # 改变颜色
+cascade = cv2.CascadeClassifier()  # 计算机视觉库里面用来识别人脸的类库
+cascade.load("G:/python doc/spyder doc/haarcascade_frontalface_default.xml")  # 要拿这个对象加载一下咱们识别人脸的算法xml文件（xml文件不需要去理解）
+face = cascade.detectMultiScale(sanpang)  # 拿这个类进行人脸识别
+print(face)  # [225  76  72  72],225  76表示图片起始坐标,72  72表示图片的长与宽
+
+dog = cv2.imread("G:/python doc/spyder picture/dog.jpg")  # 读取dog这张图片
+dog.shape  # (450, 450, 3)
+samll_dog = cv2.resize(dog,(72,72))  # dog图片的大小变为72*72
+samll_dog.shape  # (72, 72, 3)
+# 头像图片替换：---这个方式比较特殊需要注意下！！！
+for (h,w,p,p) in face:  # (h,w,p,p)对应于[225,  76,  72,  72]
+    sanpang[w:w+p,h:h+p] = samll_dog   # 特殊方法
+plt.imshow(sanpang[::,::,::-1])
+
+
+'''2.pandas---Series的基本操作''' 
 # Series是增强版的numpy.ndarray,多了索引和标签
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from pandas import Series,DataFrame 
 
-# 2.1 Series的创建---通过np.array进行创建
+# 2.1 Series的创建---通过numpy进行创建
 n = np.array([0,2,4,6,8])
 s = Series(n)   # 先生成ndarray，再转换成Series
 s.values  # 查看Series具体的值；这个值本身就是numpy.ndarray格式的
@@ -58,14 +81,21 @@ list(s.index)  # 输出Series的索引值
 type(s)  #  pandas.core.series.Series
 type(s.values)  # numpy.ndarray
 
-# 创建新的索引值
+# 2.1.1 修改索引
+s.index = list('abcde')
 s.index = ['张三','李四','Michael','sara','lisa']
 print(s)
+print(s.index[0])  # 查看第一个索引值
+# s.index[0]='r' # 不能单独修改索引
 
-# 检索
+#  2.1.2 检索和修改值
 s['sara']  # 输出s['sara']的values
 s['张三'] = 100  # 给'张三'赋值
 print(s)
+print(n)  # 特别的：对Series元素的改变也会改变原来的ndarray对象中的元素
+
+# 2.1.3 快速写法---常用
+s = Series(data = np.random.randint(0,100,size = (10)), index= list('abcdefghik'))
 
 # 2.2 Series的创建---由字典创建，通过该方法进行创建索引值自动转换成字典的键值对；
 dic = {'a':np.random.randint(0,10,size = (2,3)),
@@ -75,11 +105,13 @@ dic = {'a':np.random.randint(0,10,size = (2,3)),
 s2 = Series(dic)
 print(s2) 
 
-# 2.3 直接创建-快速创建 （方法1的变形，快速写法）
-s = Series(data = np.random.randint(0,150,size = 4),index=['语文','数学','英语','Python'])
+s3 = Series(data = {"a":10,'pi':3.14,"e":2.713,"g":0.618,"kk":89,"u":22,"y":12}, index = ["a","pi","e","g","kk","u","y",'f'])
+print(s3) 
+# 注意：用字典创建的Series,其index可以多出来,多出来的为空值NAN
 
-# 2.4 Series的索引和切片  
+# 2.3 Series的索引和切片  
 '''显式索引：使用index中的元素作为索引值;使用.loc[]（推荐）'''
+s = Series(data = np.random.randint(0,150,size = 4),index=['语文','数学','英语','Python'])
 print(s['Python'])
 print(s[['Python']])
 print(s[['Python','数学']])  # 同时检索两个需要再加上一个中括号 如果是:s['Python','数学']会报错！
@@ -95,17 +127,20 @@ type(s['Python'])   # numpy.int32
 type(s[['Python','数学']])  # pandas.core.series.Series
 type(s.loc[['Python','数学']])  # pandas.core.series.Series
 
-# 2.5 Series的索引和切片   
+# 2.4 Series的索引和切片   
 '''隐式索引：使用整数作为索引值;使用.iloc[]（推荐）'''
 print(s[0])
 print(s.iloc[[1,2]])  # 同时检索两个需要再加上一个中括号
 
+# 2.5 Series的索引和切片  
+s3["a":"e"]  # Series的切片
+s3.iloc[0:2]  # 输出第一行和第二行
 
 
 '''3.Series的基本概念'''
 # 3.1 series的基本属性
 s = Series(data = np.random.randint(0,150,size = 4),index=['语文','数学','英语','Python'])
-print(s.shape)
+print(s.shape)  # (4,)表示1维
 print(s.size)
 print(s.values)
 print(s.index)
@@ -120,35 +155,50 @@ s.head(3)  # 快速查看头3个
 s.tail(3)  # 快速查看末尾3个
 
 # 3.3 检测缺失数据  ！！！
-s = Series(data = ['张三','Sara',None])
+s = Series(data = {"a":10,"b":20,"c":30}, index = list("abcd"))  # 当索引没有对应的值时,可能出现缺失数据显示为NaN
 print(s)
-print(s[2])
+print(s[3])
 
 # 可以使用pd.isnull()，pd.notnull()，或自带isnull(),notnull()函数检测缺失数据
-pd.isnull(s)  # 缺失的数据返回true，否则返回false
-s.isnull()    # 同样的，缺失的数据返回true，否则返回false
+pd.isnull(s)    # 缺失的数据返回true，否则返回false
+s.isnull()      # 同样的，缺失的数据返回true，否则返回false
 pd.notnull(s)   # 缺失的数据返回false，否则返回true
-s.notnull()    # 同样的，缺失的数据返回false，否则返回true
-s[s.notnull()]  # 通过这样的方法，可以只打印非缺失数据
+s.notnull()     # 同样的，缺失的数据返回false，否则返回true
+s[pd.notnull(s)] # 通过这样的方法，可以只打印非缺失数据
+s[s.notnull()]   # 通过这样的方法，可以只打印非缺失数据
 
 # 3.4 给series取名，起到标识的作用
 s.name = '姓名'
 print(s)
-
+# 或者这样-直接命名：
+s = Series([99,120,131,147], index = list("abcd"), name = "数学")
 
 
 '''4.Series的运算'''
 # 4.1常规加减乘除：
 s = Series(data = np.random.randint(0,100,size = 10))
-s_1 = s + 10  # series的每一个元素均加上1
-print(s_1)
+s1 = s + 10  # series的每一个元素均加上1
+print(s1)
 
 s2 = Series(data = np.random.randint(0,100,size = 5))
 print(s2)
 print(s)
-print(s + s2)  # 按照每个元素对应的索引进行相加，索引对不上的结果直接为nan！
+print(s + s2)  # 按照每个元素对应的索引进行相加，索引对不上的结果直接返回nan！
 
-# 4.2要想保留所有的index，则需要使用.add()函数
+# 4.2 索引对不上的计算
+s1 = Series(np.random.randint(0,150,size = 4), index = ["A","B","C","Sara"],name = "数学")
+s2 = Series(data = np.random.randint(0,150,size  =5), index = ["张三","李四","Sara","Lisa","Machel"])
+print(s1+s2)
+s1.add(s2)
+s1.add(s2,fill_value=0)  # 将nan自动填充为0再进行加法运算
+
+# 4.3 其他加减乘除方法
+s.add(20)
+s.subtract(20)
+s.multiply(2)
+s.divide(2)
+
+# 4.4要想保留所有的index，则需要使用.add()函数
 np.full((2,5),fill_value=10)
 s.add(s2,fill_value=0)  # 这样后5个数据就自动填上0了，不会返回nan！
 
@@ -159,7 +209,7 @@ s.add(s2,fill_value=0)  # 这样后5个数据就自动填上0了，不会返回n
 
 # -*- coding: utf-8 -*-
 """
-傅里叶案例
+5.傅里叶案例
 """
 
 import numpy as np
@@ -201,7 +251,7 @@ cat_outline  # 画出轮廓
 
 
 
-'''pandas读取与写入'''
+'''6.pandas读取与写入'''
 import pandas as pd
 pd.read_csv('G:/python doc/spyder doc/type_comma')  # 文件第一列自动升级成列名
 pd.read_csv('G:/python doc/spyder doc/type_comma',header=None)   # 重新制定列名
