@@ -61,7 +61,8 @@ np.dot(price_,total_price)  # 求矩阵的积，这也是求线代解
 3.缩减算法可以看作是对一个模型增加偏差的同时减少方差
 岭回归用于处理下面两类问题：
 1.数据点少于变量个数
-2.变量间存在共线性（最小二乘回归得到的系数不稳定，方差很大）'''
+2.变量间存在共线性（最小二乘回归得到的系数不稳定，方差很大）
+3.应用场景就是处理高度相关的数据'''
 
 import numpy as np
 from sklearn.linear_model import LinearRegression
@@ -97,7 +98,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn import linear_model
 
-# 设置一个十元一次方程---这里涉及到一维的矩阵和二维矩阵相加的广播机制
+# 设置一个十元一次方程---这里涉及到了一维的矩阵和二维矩阵相加的广播机制
 X = 1. / (np.arange(1, 11) + np.arange(0, 10)[:, np.newaxis])  # np.newaxis（多维数组）增加一个轴
 
 # 设置方程的结果值
@@ -109,22 +110,18 @@ clf = linear_model.Ridge(fit_intercept=False)  # intercept表示截距,fit_inter
 
 coefs = []
 for a in alphas:
-    clf.set_params(alpha=a)   # 动态设置alpha
+    clf.set_params(alpha=a)   # 动态设置alpha,进行训练,比较不同alpha下系数coef_的变化
     clf.fit(X, y)  # 进行训练
-    coefs.append(clf.coef_)
+    coefs.append(clf.coef_)  # clf.coef_得到clf的系数(该系数是X对y回归所得的系数)
 
-# Display results
-plt.figure(figsize=(12,9))
-#获取当前的画面
-#get current axes
-ax = plt.gca()
+plt.figure(figsize=(12,9))  # 下面画出系数的的变化(10条)
 
-
+ax = plt.gca()  # 获取当前的画面,gca=get current axes
 ax.plot(alphas, coefs)
 ax.set_xscale('log')  # 设置坐标轴刻度显示的单位 log
 
-#limit xmin xmax 坐标刻度进行了反转
-ax.set_xlim(ax.get_xlim()[::-1])  # reverse axis
+# limit xmin xmax 坐标刻度进行了反转
+ax.set_xlim(ax.get_xlim()[::-1])  # ax.set_xlim设置x轴刻度,[::-1]坐标刻度进行了反转
 plt.xlabel('alpha')
 plt.ylabel('weights')
 plt.title('Ridge coefficients as a function of the regularization')
