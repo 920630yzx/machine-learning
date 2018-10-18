@@ -9,7 +9,7 @@ Scipy包含的功能：最优化、线性代数、积分、插值、拟合、特
 import scipy as sp
 import matplotlib.pyplot as plt
 import numpy as np
-import scipy.fftpack as fftpack  # 快速傅里叶变换
+import scipy.fftpack as fftpack  # fftpack是快速傅里叶变换的一个包
 
 '''1.scipy图片噪音过滤---傅里叶变化操作---此方法还可以过滤音频,操作原理类似'''
 # 1.读取图片
@@ -28,9 +28,9 @@ moon_data_fft = fftpack.fft2(moon_data)   # fftpack.fft2对二维、三维数组
 
 # 3.进行高频率的过滤,突兀===高频,过滤高频
 condition = np.abs(moon_data_fft) > 8e2  
-index = np.where(condition)  # 查找满足这一条件的索引，但是这种输出格式不好，使用argwhere更好！
+index = np.where(condition)     # 查找满足这一条件的索引，但是这种输出格式不好，使用argwhere更好！
 index = np.argwhere(condition)  # 查找满足这一条件的索引；第一列代表纵轴，第二列代表横轴。
-moon_data_fft[condition] = 0  # 将满足条件项置为0，其用意是将高频,高频的过滤掉
+moon_data_fft[condition] = 0    # 将满足条件项置为0，其用意是将高频,高频的过滤掉
 
 # 4.使用fftpack.ifft2进行反傅里叶操作，变为实域（结果多含有虚数）
 moon_data_ifft = fftpack.ifft2(moon_data_fft)

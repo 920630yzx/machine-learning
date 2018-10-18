@@ -47,7 +47,7 @@ contbr_zip:贡献者邮编    contbr_employer:贡献者所在公司   contbr_occ
 contb_receipt_amt:贡献者捐款金额    contb_receipt_dt:贡献者捐款日期
 '''
 
-# 1.使用map隐射函数，新建一列各个候选人所在党派party！（考虑下使用merge行吗？）
+# 1.使用map隐射函数，新建一列各个候选人所在党派party！
 ele['party'] = ele['cand_nm'].map(parties)
 
 # 2.1 使用np.unique()函数查看party这一列中有哪些元素!
@@ -59,6 +59,7 @@ ele['party'].value_counts()
 # 3.1 使用groupby()函数，查看各个党派收到的政治献金总数contb_receipt_amt！
 ele.columns  # 获取所有的列名
 ele.dtypes  # 获取所有的列名的详细情况
+ele.groupby(['party']).sum()
 ele.groupby(['party'])['contb_receipt_amt'].sum()  
 
 # 3.2 使用groupby函数，查看具体每天各个党派收到的政治献金总数contb_receipt_amt！
@@ -69,8 +70,19 @@ ele.groupby(['party','contb_receipt_dt'])['contb_receipt_amt'].sum()  # 只显�
 def time_convert(dt): 
     day,mon,year = dt.split('-')
     return '20'+year+'-'+str(months[mon])+'-'+day
+
+''' 另外一种形式---自己试试
+def time_convert(date):
+    #30-OCT-11     ===>  2011- 10-30   
+    day,mon,year = date.split('-')
+    month = months[mon]
+    time = '20'+str(year)+"-"+str(month)+"-"+str(day)
+    return time'''
+
 ele['contb_receipt_dt'] = ele['contb_receipt_dt'].map(time_convert)
 ele.tail(3)  # 查看转换是否成功，输出最后三行
+ele.dtypes   # 查看元素
+
 # 对日期格式调整的一些说明：
 months['MAR']
 s='29-MAR-11'
@@ -121,12 +133,17 @@ ele.groupby('cand_nm')['contb_receipt_amt'].max()  # 获取各个参选人当中
 ele.query("cand_nm == 'Obama, Barack' and contb_receipt_amt == 1944042.43")
 ele.query("contb_receipt_amt == 1944042.43")  # 查询的结果当然完全一样了
 
-
-
+# 10.1 统计哪个职业对奥巴马的贡献最大
+result = ele.groupby(["cand_nm", "contbr_occupation"])['contb_receipt_amt'].sum()  # 再记录一下.  cand_nm:参选人名称,contbr_occupation:贡献者的职业
+cond = result["Obama, Barack"]>1e5  # 对奥巴马贡献最大的是哪个职业
+result["Obama, Barack"][cond]      # 这些人对奥巴马的捐献均超过了100000美金
 
 
 
 '''实战2：苹果公司股价分析'''
+# http://www.data.gov/ 是美国一个关于数据政府网站，可以获取股票数据
+# G:\python doc\spyder doc 下一个名为文件如何获取数据有介绍
+
 import numpy as np
 import pandas as pd
 from pandas import Series,DataFrame
@@ -145,7 +162,7 @@ app.tail()  # 输出最后5行
 # 2.用set_index函数将'Date'列设置为列索引!!!(set_index修改列索引)
 app.set_index('Date',inplace=True)
 app.head()
-app.shape
+app.shape   # (9296, 6)
 
 # 3.绘制苹果公司的股票走向
 plt.figure(figsize=(12,9))
@@ -153,7 +170,16 @@ figure = plt.plot(app[['Adj Close']])
 
 
 
-'''其他：修改列名：'''
+'''实战3 删除重复元素'''
+import numpy as np
+import pandas  as pd
+from pandas import Series,DataFrame
+
+df = DataFrame({"color":["red","white","red","green"], 'size':[10,20,10,30]})
+df.duplicated()       # 查询重复的行
+df.drop_duplicates()  # 删除重复的行
+
+'''实战4 修改列名：'''
 df1 = DataFrame({'day':['Fri','Stat','Sun','Thur'],'1':[1,2,0,1],'2':[16,53,39,48],'3':[1,18,15,4],'4':[1,13,18,5],'5':[0,1,3,1],'6':[0,0,1,3]},
                 index=[0,1,2,5],
                 columns=['day','1','2','3','4','5','6'])

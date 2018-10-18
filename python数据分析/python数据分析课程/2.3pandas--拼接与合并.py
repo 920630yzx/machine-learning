@@ -146,7 +146,7 @@ s = df7["age"]*1000
 s.columns = ["slary"]
 df7.merge(s, left_index = True,right_index = True)  # 报错---因为series不能合并(merge)
 
-'''12.6 内合并、外合并、左合并、有合并 how'''
+'''12.6 内合并、外合并、左合并、右合并 how'''
 df1 = DataFrame({'name':['张三','李四','张三'],'salary':[10000,12000,20000],'age':[22,21,25]})
 df2 = DataFrame({'age':[21,18,29],'名字':['张三','张三','凡凡'],'group':['sale','search','service']})
 print(df1)
@@ -156,7 +156,7 @@ df1.merge(df2,how='outer')  # 外合并：在内合并基础上,将匹配失败�
 df1.merge(df2,how='left')   # 左合并，df1全部输出取匹配df2，没有返回NAN
 df1.merge(df2,how='right')  # 右合并，df2全部输出取匹配df1，没有返回NAN
 
-'''12.7 列冲突   --- 类似于10.5.4 key的规范化'''
+'''12.7 列冲突 --- 类似于10.5 key的规范化'''
 df1 = DataFrame({'name':['张三','李四','张三'],'degree':[120,118,149],'age':[22,21,25]})
 df2 = DataFrame({'degree':[99,97,129],'name':['张三','张三','凡凡'],'group':['sale','search','service']})
 df1.merge(df2,on='name')  # 指定name列
@@ -181,54 +181,66 @@ pop = pd.read_csv('G:/anaconda/excel/state-population.csv')
 areas = pd.read_csv('G:/anaconda/excel/state-areas.csv')
 abb = pd.read_csv('G:/anaconda/excel/state-abbrevs.csv')
 
-pop.shape
+pop.shape  # (2544, 4)
 pop.head()
-areas
+areas.shape  # (52, 2)
 areas.head()
-abb
+abb.shape  # (51, 2)
 abb.head()
 
 # 1.合并pop表和abb表；'state/region','abbreviation'这两列名称不一样但是内容一样
-pop_m = pop.merge(abb,left_on='state/region',right_on='abbreviation',how = 'inner')   # 默认how = 'inner',只连接匹配的项 
-pop_m = pop.merge(abb,left_on='state/region',right_on='abbreviation',how = 'outer')   # 当然这里使用how = 'left'也可以
-pop_m.shape
+pop1 = pop.merge(abb,left_on='state/region',right_on='abbreviation',how = 'inner')   # 默认how = 'inner',只连接匹配的项 
+pop1 = pop.merge(abb,left_on='state/region',right_on='abbreviation',how = 'outer')   # 当然这里使用how = 'left'也可以
+pop1.shape  
 
 # 2.将abbreviation列删除,inplace=True表示删除后直接保存至pop_m
-pop_m.drop('abbreviation',axis = 1,inplace=True)
-pop_m.head()
-pop_m.tail()
+pop1.drop('abbreviation',axis = 1,inplace=True)
+pop1.head()
+pop1.tail()
 
 # 3.查看存在缺失数据的列。
-pop_m.isnull().any()   # 判断整列,只要有一个为空就返回true
-pop_m.isnull().any(axis = 1)  # 判断整行,只要有一个为空就返回true
-pop_m.loc[pop_m.isnull().any(axis = 1)]  # 查看为空的行
+pop1.isnull().any()   # 判断整列,只要有一个为空就返回true
+cond = pop.isnull().any(axis = 1)  # 判断整行,只要有一个为空就返回true
+pop1.loc[cond]  # 查看pop1为空的行
 
 # 4.填补空缺
-condition = pop_m['state'].isnull()  
-pop_m['state/region'][condition].unique()  #  .unique()排重，只有2个州，对应的州名为空
+condition = pop1['state'].isnull()  
+pop['state/region'][condition].unique()  #  .unique()排重，只有2个州，对应的州名为空
 
-condition = pop_m['state/region'] == 'PR'     # 查询PR
-pop_m['state'][condition] = 'Puerto Rico'    # 给予新的名称
-condition = pop_m['state/region'] == 'USA'   # 查询'USA'
-pop_m['state'][condition] = 'United State'   # 给予新的名称
-pop_m.isnull().any()   # 刚才的填补操作，起作用了，州名称已经全部补齐，可以与areas进行合并了
+condition = pop1['state/region'] == 'PR'     # 查询PR
+pop1['state'][condition] = 'Puerto Rico'    # 给予新的名称
+condition = pop1['state/region'] == 'USA'   # 查询'USA'
+pop1['state'][condition] = 'United State'   # 给予新的名称
+pop1.isnull().any()   # 刚才的填补操作，起作用了，州名称已经全部补齐，可以与areas进行合并了
 
 # 5.pop_m与areas进行合并
-pop_areas_m = pop_m.merge(areas,how = 'outer')
-pop_areas_m.shape
-pop_areas_m.isnull().any()  # 发现仍然右两列缺失了
+pop2 = pop1.merge(areas,how = 'outer')  #  这里how="left"也行
+pop2.shape
+pop2.isnull().any(axis=1)  # 查看列的缺失情况
+pop2.isnull().any()  # 发现仍然有两列缺失了-population列和area (sq. mi)列
 
-# 6.查看缺失得area(sq.mi)
-cond = pop_areas_m['area (sq. mi)'].isnull()
-pop_areas_m['state/region'][cond]
-pop_areas_m['state/region'][cond].unique()  #  .unique()排重，只有1个州(下面没有选择填补，而是选择直接去除缺失数据)
+# 6.查看缺失的列area(sq.mi)
+cond = pop2['area (sq. mi)'].isnull()
+pop2[cond]  # 查看'area (sq. mi)'列有缺失的行
+pop2['state/region'][cond]
+pop2['state/region'][cond].unique()  #  .unique()排重，只有1个州(下面没有选择填补，而是选择直接去除缺失数据)
 
-# 7.删除含有缺失数据的行
-pop_areas_m.shape
-pop_areas_r = pop_areas_m.dropna()   # dropna()默认清除缺失的行
-pop_areas_r.shape
-pop_areas_r.isnull().any() # 可以看见已经无缺失值了
-pop_areas_r.head()
+usa_areas = areas["area (sq. mi)"].sum()   # 求美国的总面积
+pop2["area (sq. mi)"][cond]= usa_areas  # 重新赋值
+pop2.isnull().any()  # 再次查看空值
+
+# 7.合并abb又删除
+pop3 = pop2.merge(abb,how = 'left')
+pop3.isnull().any()
+pop3 = pop3.drop("abbreviation", axis = 1)  # 删除"abbreviation"列
+pop3.isnull().any()
+
+# 8.删除含有缺失数据的行
+pop3.shape   # (2544, 6)
+pop3.dropna(inplace=True)   # dropna()默认清除缺失的行
+pop3.shape   # (2524, 6)
+pop3.isnull().any()  # 可以看见现在pop3已经无缺失值了
+pop3.head()
 
 '''其他删除方法：
 pop_m.drop(2)
@@ -243,10 +255,15 @@ df.drop(['Zhang Sir','MissLan'])  # 删除Zhang Sir行和MissLan行
 df.drop('php',axis=1)'''  # 删除php列
 
 # 8.进行分析
-# 8.1 用query对dataframe进行挑选：
-t_2010 = pop_areas_r.query("ages == 'total'")
-t_2010 = pop_areas_r.query("ages == 'total' and year == 2010")
+# 8.1 用query对dataframe进行查询：query查询方法
+t_2010 = pop3.query('year == 2010')
+t_2010 = pop3.query("ages == 'total'")
+t_2010 = pop3.query("ages == 'total' and year == 2010")
 t_2010.shape
+
+''' 对比下where查询方法:
+pop3['year'] > 2010  # 大于50的元素返回true，反之返回false
+pop3.where(pop3['year'] > 2010)  # 不满足的数据返回nan'''
 
 # 8.2 用set_index调整dataframe的索引
 t_2010.set_index('state',inplace=True)  # 让'state'作为新的索引
@@ -259,7 +276,12 @@ type(pop_density)  # pandas.core.series.Series
 pop_density.sort_index()  # 对索引进行排序
 pop_density.sort_values(inplace=True) # 对值进行排序
 pop_density[:5]  # 人口密度最低的五个州
+pop_density[::-1]   # 倒序排列
 pop_density.tail()  # 人口密度最高的五个州
+
+# 或者使用方法2：
+pop_density_2 = t_2010['population']/t_2010["area (sq. mi)"]
+pop_density_2.sort_values(ascending=False, inplace=True)  # ascending=False表示倒序
 
 
 

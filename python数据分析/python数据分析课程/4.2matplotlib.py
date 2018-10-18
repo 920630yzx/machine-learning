@@ -8,6 +8,7 @@ text()       mpl.axes.Axes.text()            在Axes对象的任意位置添加�
 xlabel()     mpl.axes.Axes.set_xlabel()      为X轴添加标签
 ylabel()     mpl.axes.Axes.set_ylabel()      为Y轴添加标签
 xticks                                       为x轴设置刻度
+yticks                                       为y轴设置刻度
 title()      mpl.axes.Axes.set_title()       为Axes对象添加标题
 legend()     mpl.axes.Axes.legend()          为Axes对象添加图例
 savefig                                      保存图片
@@ -93,12 +94,12 @@ marker:点型     markeredgecolor:点边缘的颜色    markeredgewidth:点边�
 markerfacecolor:点内部的颜色      markersize:点的大小'''
 
 '''1.12 在一条语句中为多个曲线进行设置'''
-# 1.12.1 多个曲线同一设置
+# 1.12.1 多个曲线同一设置---需要连写的要连写
 x = np.arange(0,10,1)
 plt.plot(x,x,x,2*x,color='r')
 plt.plot(x,x,x,2*x,color='r',linestyle=':')
 
-# 1.12.2 多个曲线不同设置
+# 1.12.2 多个曲线不同设置---需要连写的要连写
 x = np.arange(0,10,1)
 plt.plot(x,x,'g',x,2*x,'r')  # 如果此时写上color=’g‘就会报错
 plt.plot(x,x,'g--o',x,2*x,'r:v')
@@ -106,10 +107,10 @@ plt.plot(x,x,'g--o',x,2*x,'r:v')
 # 1.12.3 分别设置方法---set方法---过于复杂麻烦
 x = np.arange(0,10,1)
 plt.plot(x,x,x,2*x)  # 结果会产生两行:[<matplotlib.lines.Line2D at 0x215655b60f0>,<matplotlib.lines.Line2D at 0x215655b62b0>]
-line1,line2, = plt.plot(x,x,x,2*x)  # 我们接受这个结果,此时这两行就不会报出
-line1.set_alpha(0.3)
-line1.set_ls('--')
-line2.set_marker('*')
+line1,line2, = plt.plot(x,x,x,2*x)  # 我们接受这个结果,此时这两行就不会报出,同时这种方法需要注意逗号的添加
+line1.set_alpha(0.3)  # aplha设置透明度
+line1.set_ls('--')    # ls设置线条风格
+line2.set_marker('*')     # marker设置点型
 line2.set_markersize(10)
 
 # 1.12.4 使用setp()方法---这个方法非常巧妙！---推荐
@@ -126,28 +127,51 @@ plt.xticks(np.linspace(0,2*np.pi,5),[0,'$\sigma/2$','$\delta$','$3\pi/2$','$2\pi
 
 
 '''2.2D图形'''
-# 2.1 直方图---hist
+import numpy as np
+import matplotlib.pyplot as plt
+'''2.1 直方图---hist'''
 '''hist参数说明：
-bins:可以是一个bin数量的整数值，也可以是表示bin的一个序列。默认值为10
+bins:是一个bin数量的整数值，也可以是表示bin的一个序列。默认值为10
 normed:如果值为True，直方图的值将进行归一化处理，形成概率密度，默认值为False
 color:指定直方图的颜色。可以是单一颜色值或颜色的序列。如果指定了多个数据集合，颜色序列将会设置为相同的顺序。如果未指定，将会使用一个默认的线条颜色
 orientation:通过设置orientation为horizontal创建水平直方图。默认值为vertical'''
-
 x = np.random.randint(0,10,10)
+plt.hist(x,bins=10)
 plt.hist(x,bins=100)
 plt.hist(x,bins=100,normed=True)
 plt.hist(x,bins=100,normed=True,color='#3300ff')
+plt.hist(x,bins=20,color='g')
+plt.hist(x,bins=20,color='g',width=0.5)  # width线条宽度
+plt.hist(x,color='g',width=0.5,bins=10,density=False)
 
-# 2.2 条形图---bar()   水平条形图---barh()
+'''2.2 条形图---bar(),水平条形图---barh()'''
+# 2.2.1：条形图
 x = [1,2,3,5,6]
 y = [4,7,9,2,10]
-plt.bar(x,y,width=0.2)
+plt.bar(x,y,width=0.2)  # 条形图,参数x表示x轴上的值,参数y表示高度 
 
 x = [1,2,3,5,6]
 y = [4,7,9,2,10]
-plt.barh(x,y)
+plt.barh(x,y)  # 水平条形图
 
-# 2.3 饼图---pie()
+x = np.arange(0,10)
+height = np.random.randint(0,30,size = 10)
+plt.bar(x,height)
+
+# 2.2.2:绘制极坐标图---polar=True,bar()---极坐标图就是特殊情况的条形图
+wind = np.load('G:/python doc/spyder picture/Ravenna_wind.npy')
+# 将wind数据分为8组,分别占据0-360度
+wind_count,wind_arange = np.histogram(wind,bins = 8,range = (0,360))
+plt.bar(wind_arange[:-1],wind_count,width = 22.5)
+wind_arange[-1]  # 取np.array最后一个
+np.arange(0,2*np.pi,np.pi/4)
+
+plt.figure(figsize=(8,8))
+plt.axes(polar = True,facecolor = 'green')  # axes轴（默认情况下是普通坐标系）
+plt.bar(x=np.arange(0,2*np.pi,np.pi/4),height=wind_count,color=(0.3,0.5,0.7))         # 用元组表示颜色,3*1的元组表示一种颜色
+plt.bar(x=np.arange(0,2*np.pi,np.pi/4),height=wind_count,color=np.random.rand(8,3))   # 用8*3的元组表示8种颜色
+
+'''2.3 饼图---pie()'''
 # 2.3.1 普通饼图
 x = [0.3,0.4,0.3]
 plt.pie(x,labels=['A','B','C'])
@@ -163,7 +187,7 @@ plt.show()
 # 2.3.3 饼图属性设置---labeldistance,autopc,pctdistance
 x = [0.2,0.15,0.15,0.1,0.1,0.2,0.1]
 labels = ['USA','China','Europe','Japan','Russia','UK','India']
-plt.pie(x,labels = labels,labeldistance=1.25,autopct='%1.3f%%',pctdistance=0.8)  # utopct='%1.3f%%'显示百分比,这里保留2位小数
+plt.pie(x,labels = labels,labeldistance=1.25,autopct='%1.3f%%',pctdistance=0.8)  # autopct='%1.3f%%'显示百分比,这里保留2位小数
 plt.axis('equal')  # labeldistance=1.25设置标签圆心距;pctdistance=0.8设置数字圆心距
 plt.show()
 
@@ -175,20 +199,31 @@ plt.pie(x,labels = labels,labeldistance=1.3,autopct='%1.2f%%',pctdistance=0.8,
 plt.axis('equal')
 plt.show()
 
+# 2.3.5
+plt.figure(figsize=(6,6))
+x  = np.array([0.1,0.3,0.2,0.1,0.2,0.1])
+_ = plt.pie(x,labels = list('ABCDEF'),labeldistance=1.2,autopct='%.2f%%',
+            pctdistance=0.8,explode=[0.2,0,0,0.1,0,0],shadow = True)
+
 '''饼图属性:
 labeldistance:设置标签圆心距;  pctdistance:设置数字圆心距
 color:设置每一块的颜色;   explode设置每个部分的分离距离
 shadow:设置图片阴影;   utopct:设置显示百分比;  startangle:饼图旋转角度
 '''
 
-# 2.4 散点图---scatter---就是点图
+'''2.4 散点图---scatter---就是点图'''
+# 案例1：
+x = np.random.randint(-20,20,size = 100)
+y = x*0.8 + np.random.randint(-3,3,100)
+plt.scatter(x,y)
+
+# 案例2：
 x = np.random.randn(1000)
 y = np.random.randn(1000)
 colors = np.random.rand(3000).reshape(1000,3)
 s = np.random.normal(loc = 35,scale= 50,size = 1000)  # 以35为均值,50为方差的正态分布
 np.mean(s)  # 验证均值
 np.std(s)   # 验证方差
-
 plt.scatter(x,y,s=s,color=colors,marker='d')  # marker='d'表示菱形---查看上方点型有marker的详细参数介绍,s就是图形的大小
 
 
@@ -224,14 +259,14 @@ plt.plot(x1,label='plot')  # 如果不想在图例中显示标签，可以将标
 plt.plot(x2,label='2nd plot')
 plt.plot(x3,label='last plot')
 
-# 绘制图例---bbox_to_anchor指定图例边界框起始位置与宽高,ncol设置列数,mode="expand"图例框会扩展至整个坐标轴区域
+# 3.4 绘制图例---bbox_to_anchor指定图例边界框起始位置与宽高,ncol设置列数,mode="expand"图例框会扩展至整个坐标轴区域
 plt.legend(bbox_to_anchor=(0, 1, 0.8, 0.5),  # 指定图例边界框起始位置为(0, 1),并设置宽度为0.8,高度为0.5
            loc=3,    # 设置位置为lower left
            ncol=3,   # 设置列数为3,默认值为1
            mode="expand",      # mode为None或者expand,当为expand时,图例框会扩展至整个坐标轴区域
            borderaxespad=0.5)   # 指定坐标轴和图例边界之间的间距
 
-# 绘制注解---annotate()---help(plt.annotate)可以看看
+# 3.5 绘制注解---annotate()---help(plt.annotate)可以看看
 plt.annotate("Important value",   # 注解文本的内容
              xy=(55,20),          # 箭头终点所在位置
              xycoords='data',     # 指定注解和数据使用相同的坐标系
@@ -240,71 +275,5 @@ plt.annotate("Important value",   # 注解文本的内容
 
 
 
-'''4.绘制3D图''' 
-import numpy as np
-import matplotlib.pyplot as plt            
-from mpl_toolkits.mplot3d.axes3d import Axes3D   # 绘制3D图需要导这个包
-# 4.1 案例1:
-phi_m = np.linspace(0, 2*np.pi, 100)
-phi_p = np.linspace(0, 2*np.pi, 100)   
-plt.plot(phi_m,phi_p)        
-X,Y = np.meshgrid(phi_p, phi_m)  # 画三维图需要执行这个方法,np.meshgrid方法执行后发现这两个一维数据组被二维了
-plt.plot(X,Y) # 这个图片可以看似为一个三维图片
-
-Z = 0.7*X+2-np.sin(Y)+2*np.cos(3-X)  # 定义的三维函数
-fig = plt.figure(figsize=(16,9))            
-axes1 = plt.subplot(1,2,1,projection='3d')  # projection='3d'表示绘制三维图,必须填上           
-axes1.plot_surface(X,Y,Z)
-
-# 绘制第二张3D图:
-axes2 = plt.subplot(1,2,2,projection='3d')
-axes2.plot_surface(X,Y,Z,cmap='rainbow')  # 如果cmap的参数写错,返回的结果也会提示这个错误,并指出哪些参数可选!
-
-# 4.2 案例2:
-phi_m = np.linspace(0, 2*np.pi, 100)
-phi_p = np.linspace(0, 2*np.pi, 100)   
-plt.plot(phi_m,phi_p)        
-X,Y = np.meshgrid(phi_p, phi_m)  # 画三维图需要执行这个方法,np.meshgrid方法执行后发现这两个一维数据组被二维了
-
-Z = 0.7*X+2-np.sin(Y)+2*np.cos(3-X)  # 定义的三维函数
-fig = plt.figure(figsize=(16,9))            
-axes1 = plt.subplot(1,2,1,projection='3d')  # projection='3d'表示绘制三维图,必须填上           
-axes1.plot_surface(X,Y,Z)
-
-# 绘制第二张3D图:
-axes2 = plt.subplot(1,2,2,projection='3d')
-axes2.set_xlabel('x-x')  # 绘制x轴标签
-axes2.set_ylabel('y-y')  # 绘制y轴标签
-axes2.set_zlabel('z-z')  # 绘制z轴标签
-axes2.set_xticks(np.linspace(0,2*np.pi,5))  # 绘制x轴刻度
-axes2.set_xticks(np.linspace(0,2*np.pi,5))  # 绘制y轴刻度
-p = axes2.plot_surface(X,Y,Z,cmap='rainbow')  # 如果cmap的参数写错,返回的结果也会提示这个错误,并指出哪些参数可选!
-plt.colorbar(p,shrink=0.8)  # axes2如果被接收(p)就不会再画出了,通过这种方式可以画出axes这张图片
-# plt.colorbar是颜色棒,shrink设置颜色棒的缩放比例
 
 
-
-'''5.绘制玫瑰图''' 
-import numpy as np
-import matplotlib.pyplot as plt  
-x = np.random.randint(0,10,size=10)
-y = np.random.randint(10,20,size=10)
-plt.bar(x,y,width=0.5)  # width设置宽度
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-             
-             

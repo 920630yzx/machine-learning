@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
+ # -*- coding: utf-8 -*-
 """
-Created on Wed Aug 22 10:48:17 2018
 @author: 肖
 """
 
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from pandas import Series,DataFrame
 
 '''1.Matplotlib基础知识'''
 '''1.0 np.arange与np.linspace'''
@@ -19,8 +19,8 @@ np.linspace(0,2*np.pi,5)
 x = np.linspace(0,100,1000)
 plt.plot(x,np.sin(x))
 # 法2：
-x = np.linspace(0,10,10)
-y = x**2
+x = np.linspace(0,10,100)
+y = np.sin(x)
 plt.plot(x,y)
 # 法3：使用匿名函数进行绘制
 f = lambda x : x**2
@@ -37,9 +37,16 @@ x = np.arange(0,10,1)
 plt.plot(x,x*2,x,x/2,x,x**2)
 
 '''1.3 绘制点图---plt.scatter'''
+# 法1：
 x = np.random.randint(0,10,size=10)
 plt.scatter(x,x**2)
 
+# 法2：使用plot方法也可绘制点图---方法：添加参数:'o'
+df = DataFrame(np.random.randint(0,150,size = (10,2)),index = list('abcdefhijk'),columns = ['Python','En'])
+plt.plot(df['Python'],df['En'],'o')  # 绘制点图,df['Python'],df['En']分别表示横纵坐标
+
+df['Math'] = df['Python'].map(lambda x : 0.8*x + np.random.randint(-20,20,size = 1)[0])   # 使用map函数新增一列
+plt.plot(df['Python'],df['Math'],'o')  # 绘制点图,不加'o'结果为绘制线图
 
 '''1.4 绘制网格线---plt.grid(True)'''
 # 1.4.1 绘制普通网格线
@@ -52,7 +59,6 @@ x = np.arange(-np.pi,np.pi,0.01)   # np.pi表示圆周率
 plt.plot(x,np.sin(x),x,np.cos(x))
 plt.grid(color = 'g',linestyle = '--',linewidth = 1)  # linestyle = '--'是设置的网格线样式,linewidth = 1是设置线条的粗细
 
-
 '''1.5 同时绘制多张图及上面的综合运用---plt.subplot'''
 plt.figure(figsize=(12,9))  # 设置图片的大小
 axes1 = plt.subplot(1,3,1)  # 1行3列的第一个视图
@@ -62,7 +68,7 @@ axes1.plot(x,np.sin(x))
 
 axes2 = plt.subplot(1,3,2)  # 1行3列的第二个视图
 x2 = np.arange(-20,20,0.1)
-axes2.grid(color='g',linestyle ='-.',linewidth=2)
+axes2.grid(color='purple',linestyle ='-.',linewidth=2)
 axes2.plot(x2,np.cos(x2))
 
 axes3 = plt.subplot(1,3,3)  # 1行3列的第三个视图
@@ -122,19 +128,35 @@ plt.ylim(2,10)   # y轴范围为2到10
 x = np.arange(0,10,1)
 y = x**2+5
 plt.plot(x,y)
-plt.xlabel('x',fontsize = 20)   # 设置x轴标签,fontsize = 20是该标签的字体大小
+plt.xlabel('x',fontsize = 20,color = 'red')   # 设置x轴标签,fontsize = 20是该标签的字体大小
 plt.ylabel('f(x) = x**2+5',rotation = 30,horizontalalignment = 'right')   # 设置y轴标签,rotation = 30表示字体旋转30度,
 
-# 1.6.5---设置坐标轴标签刻度
+# 1.6.5---设置坐标轴标签刻度---xticks/yticks
+# 案例1:
 x = np.linspace(0,10,1000)
 plt.plot(x,np.sin(x))
 plt.yticks([-1,0,2])  # 调整y轴刻度
 plt.xticks(np.arange(20))   # 调整x轴刻度
 
+# 案例2:
 x = np.linspace(0,10,1000)
 plt.plot(x,np.sin(x))
 plt.yticks([-1,0,1],['min',0,'max'])  # 数值[-1,0,1]分别表示为['min',0,'max']
 plt.xticks(np.arange(10),list('abcdefhjik'))  # 数值np.arange(10)分别表示为list('abcdefhjik')
+
+# 案例3:
+x = np.linspace(0,10,1000)
+y = np.sin(x)
+plt.plot(x,y)
+plt.xticks([0,1,2,3,4,5,6],list('abcdefg'),fontsize = 15,rotation = -60,color = 'red')
+plt.yticks([-1,0,1],['min',0,'max'])   # -1 0 1 分别替换为 'min',0,'max'
+
+# 案例4: np.pi的表示方法！--本节综合运用---$\pi$表示pi
+x = np.linspace(0,10,1000)
+y = np.sin(x)
+np.arange(0,2*np.pi + 0.001,np.pi/2)  # 由于左闭右开原则,2*np.pi + 0.001以便取到2*np.pi这个值！
+plt.plot(x,y)
+plt.xticks(np.arange(0,2*np.pi + 0.00000001,np.pi/2),[0,'$\lambda$/2','$\\alpha$','3$\pi$/2','2$\pi$'])
 
 # 1.6.5---设置坐标轴标签刻度---面向对象的方法---思想还是比较类似的
 x = np.linspace(0,10,1000)
@@ -153,6 +175,10 @@ x = np.linspace(-np.pi,np.pi,100)
 plt.plot(x,np.sin(x))
 plt.title('f(x) = sin(x)',fontsize=20,loc='center',verticalalignment='bottom')
 
+# 注意当有中文时fontsize应写在fontproperties的后面！
+x = np.linspace(-np.pi,np.pi,100)
+plt.plot(x,np.sin(x))
+plt.title('正弦波',loc='center',fontproperties = 'KaiTi',fontsize=30)  # fontproperties设置字体
 
 '''1.8---图例---legend---添加线条标题'''
 # 1.8.1---一起添加图例
@@ -165,18 +191,21 @@ plt.legend(['normal','fast','slow'])  # 参数传递需要中括号
 plt.legend(['normal','_fast','slow']) # fast前加上'_'也可使这条线不添加图例
 
 # 1.8.2---分别添加图例
+x = np.arange(0,10,1)
 plt.plot(x,x,label = 'normal')
 plt.plot(x,x*2,label = 'fast')
 plt.plot(x,x/2,label = 'slow')
 plt.legend()  # 必须添加这行分别添加才能生效
 
 # 1.8.3---分别添加图例---中间一条线不加图例
+x = np.arange(0,10,1)
 plt.plot(x,x,label = 'normal')
 plt.plot(x,x*2)  # 不加label即可使这条线不添加图例
 plt.plot(x,x/2,label = 'slow')
 plt.legend()  # 必须添加这行分别添加才能生效
 
 # 1.8.4---分别添加图例---中间一条线不加图例
+x = np.arange(0,10,1)
 plt.plot(x,x,label = 'normal')
 plt.plot(x,x*2,label = '_fast')  # fast前加上'_'也可使这条线不添加图例
 plt.plot(x,x/2,label = 'slow')
@@ -189,7 +218,7 @@ plt.plot(x,x,label='normal')
 plt.plot(x,x*2,label='_fast')  # fast前加上'_'也可使这条线不添加图例
 plt.plot(x,x/2,label='slow')
 plt.legend(loc='upper center') 
-plt.legend(loc=9)   # 给数字也是完全一样的  'upper center'==9
+plt.legend(loc=9)       # 给数字也是完全一样的  loc='upper center'
 plt.legend(loc=(0,1))   # 如果给元组则表示相对位置
 
 plt.plot(x, x, label='Normal')
@@ -208,10 +237,10 @@ x = np.arange(0,10,1)
 plt.plot(x,x,label='normal')
 plt.plot(x,x*2,label='_fast')  # fast前加上'_'也可使这条线不添加图例
 plt.plot(x,x/2,label='slow')
-plt.legend(bbox_to_anchor=(0,1))   # 如果给元组则表示相对位置
+plt.legend(bbox_to_anchor=(0,1))     # 如果给元组则表示相对位置
 plt.legend(bbox_to_anchor=(0.5,1))   # 如果给元组则表示相对位置
 plt.legend(bbox_to_anchor=(0.8,1))   # 如果给元组则表示相对位置
-plt.legend(bbox_to_anchor=(0,1,1,0))   # 前面两个参数是图例的坐标，后面两个参数是图例的宽高
+plt.legend(bbox_to_anchor=(0,1,1,0)) # 前面两个参数是图例的坐标，后面两个参数是图例的宽高
 
 # 1.8.7---ncol参数---调整图例的列数
 x = np.arange(1,5)
@@ -253,7 +282,7 @@ plt.plot(y1,linestyle = '--',color = 'green',marker = '+')
 plt.plot(y2,linestyle = '-.')
 plt.plot(y3,marker = 'v',color = 'cyan')
 
-plt.savefig('fig1.jpg',facecolor='red',dpi=100)
+plt.savefig('fig1.jpg',facecolor='red',dpi=100)  # dpi是设置图片的分辨率，默认值100
 plt.savefig('fig1.png',facecolor='red',dpi=100)
 plt.savefig('fig1.pdf',facecolor='red',dpi=100)
 plt.savefig('fig1.ps',facecolor='red',dpi=100)
@@ -266,13 +295,17 @@ facecolor  图像的背景色，默认为“w”（白色）
 dpi        图像分辨率（每英寸点数），默认为100'''
 
 
-
-
-
-
-
-
-
+'''1.11---综合运用'''
+import numpy as np
+import matplotlib.pyplot as plt
+x = np.linspace(0,2*np.pi,20)
+y = np.sin(x)
+fig = plt.figure(facecolor='green')  # 保存图片里面绿色
+axes = fig.add_subplot(1,1,1,facecolor = 'green')  # 添加子视图add_subplot
+axes.plot(x,y,color = 'red',linestyle = '-.',label = 'sin',marker = '*',markersize = 15)
+axes.plot(x,np.cos(x),color = 'purple',linestyle = '--',label = 'cos')
+axes.legend(loc = 10)  # center:10 -- 参见前面 
+plt.savefig('./pic3.jpg',dpi = 100,facecolor = 'green') # 保存图片
 
 
 
